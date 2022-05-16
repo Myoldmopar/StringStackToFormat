@@ -1,0 +1,5 @@
+[report]
+omit =
+  epformatline/terminal.py
+  epformatline/window.py
+  epformatline/main.py
