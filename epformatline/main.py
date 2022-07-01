@@ -23,4 +23,3 @@ if __name__ == '__main__':
             print("Call with no arguments for CLI mode, call with 'gui' argument for windowed mode")
     else:
         run_terminal()
-
