@@ -26,7 +26,9 @@ setup(
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'epformat=epformatline.main:main',
+            'epformat=epformatline.main:main_embed',
+            'epformatgui=epformatline.main:main_gui',
+            'epformat_interactive=epformatline.main:main_cli'
         ],
     },
     python_requires='>=3.5',

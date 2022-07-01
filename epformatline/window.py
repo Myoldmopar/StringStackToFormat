@@ -1,5 +1,5 @@
 from sys import exit
-from tkinter import Button, Entry, Label, StringVar, Tk, NSEW, scrolledtext, END
+from tkinter import Button, Entry, Label, StringVar, Tk, NSEW, Text, END
 
 from epformatline.worker import translate
 
@@ -17,8 +17,10 @@ class FormatGUI:
 
         self.lbl = Label(self.root, text="Enter original concatenated string code: ")
         self.lbl.grid(column=0, row=0, sticky=NSEW, padx=2, pady=2)
-        self.text_area = scrolledtext.ScrolledText(self.root, width=160, height=3)
+        self.text_area = Text(self.root, width=160, height=3, wrap="word")
         self.text_area.grid(column=1, row=0, sticky=NSEW, padx=2, pady=2)
+        self.text_area.bind("<<Paste>>", FormatGUI.custom_paste)
+        self.text_area.bind('<Control-a>', FormatGUI.select_all)
 
         btn = Button(self.root, text="Translate", command=self.click_translate)
         btn.grid(column=0, row=1, columnspan=2, sticky=NSEW, padx=600, pady=2)
@@ -43,6 +45,21 @@ class FormatGUI:
         self.root.clipboard_clear()
         self.root.clipboard_append(self.out_text_var.get())
         self.root.update()  # now it stays on the clipboard after the window is closed
+
+    @staticmethod
+    def select_all(event):
+        event.widget.tag_add("sel", "1.0", "end")
+        return 'break'
+
+    @staticmethod
+    def custom_paste(event):
+        try:
+            event.widget.delete("sel.first", "sel.last")
+        except Exception as e:
+            print(str(e))
+            pass
+        event.widget.insert("insert", event.widget.clipboard_get())
+        return "break"
 
     # noinspection PyMethodMayBeStatic
     def client_exit(self):
