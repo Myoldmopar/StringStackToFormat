@@ -6,7 +6,7 @@ def sanitize_arg(arg: str) -> str:
         return arg[12:-1]
     if arg.startswith('std::string{') and arg.endswith('}'):
         return arg[12:-1]
-    return arg
+    return arg.strip()
 
 
 def translate(input_string: str) -> str:
@@ -25,6 +25,7 @@ def translate(input_string: str) -> str:
     current_quote_char = ""
     cur_arg_string = ""
     max_index = len(input_string) - 1
+    arg_brace_stack = []
     for i, c in enumerate(input_string):
         if first_character:
             if c == " " or c == "\n":
@@ -48,7 +49,23 @@ def translate(input_string: str) -> str:
             else:
                 fmt_string += c
         elif reading_arg:
-            if c == " " or c == "\n":
+            if c == "[":
+                arg_brace_stack.append("]")
+                cur_arg_string += c
+            elif c == "(":
+                if cur_arg_string != 'std::string':
+                    arg_brace_stack.append(")")
+                cur_arg_string += c
+            elif len(arg_brace_stack) > 0:
+                if c == arg_brace_stack[-1]:
+                    arg_brace_stack.pop()
+                cur_arg_string += c
+                if i == len(input_string) - 1:  # then we finished the string ending on a variable
+                    cur_arg_string = sanitize_arg(cur_arg_string)
+                    out_args.append(cur_arg_string)
+                    cur_arg_string = ""
+                    fmt_string += "{}"
+            elif c == " " or c == "\n":
                 cur_arg_string = sanitize_arg(cur_arg_string)
                 out_args.append(cur_arg_string)
                 cur_arg_string = ""
@@ -83,6 +100,9 @@ def translate(input_string: str) -> str:
             elif c == "R" and i < max_index - 4:  # 4 is a bit fuzzy, probably safe though
                 if input_string[i + 1] == "\"":
                     reading_raw_string = True
+                    cur_arg_string += c
+                else:
+                    reading_arg = True
                     cur_arg_string += c
             else:
                 reading_arg = True

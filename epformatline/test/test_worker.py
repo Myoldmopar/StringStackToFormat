@@ -52,8 +52,8 @@ class TranslateTester(TestCase):
         self.assertEqual(expected_string, translate(input_string))
 
     def test_removing_complex_std_string(self):
-        input_string = "variableName + \", \" + std::string(state.dataChillers.chiller(1).var2)"
-        expected_string = "format(\"{}, {}\", variableName, state.dataChillers.chiller(1).var2)"
+        input_string = "var + \", \" + std::string(s.data.chiller(1).var2)"
+        expected_string = "format(\"{}, {}\", var, s.data.chiller(1).var2)"
         self.assertEqual(expected_string, translate(input_string))
 
     def test_real_example_1(self):
@@ -64,4 +64,14 @@ class TranslateTester(TestCase):
     def test_raw_string_literal(self):
         input_string = "\"Spec:OA=\" + this->Name + R\"(\" Method =\" IAQ\" requires CO2.)\""
         expected_string = "format(\"Spec:OA={}{}\", this->Name, R\"(\" Method =\" IAQ\" requires CO2.)\")"
+        self.assertEqual(expected_string, translate(input_string))
+
+    def test_addition_inside_array_lookup_as_string_arg(self):
+        input_string = "C(N + 1) + \" OK.\""
+        expected_string = "format(\"{} OK.\", C(N + 1))"
+        self.assertEqual(expected_string, translate(input_string))
+
+    def test_ends_in_parentheses(self):
+        input_string = "\" Check, Type = \" + st.data->curve(index).type + \", Name = \" + GetName(st, index)"
+        expected_string = "format(\" Check, Type = {}, Name = {}\", st.data->curve(index).type, GetName(st, index))"
         self.assertEqual(expected_string, translate(input_string))
